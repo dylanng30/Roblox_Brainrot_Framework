@@ -15,6 +15,11 @@
         void OnLateUpdate(float deltaTime);
     }
 
+    public interface IOneSecondTickable
+    {
+        void OnOneSecondTick();
+    }
+
     public interface ITickSystem : ISystem
     {
         void Register(object tickable);

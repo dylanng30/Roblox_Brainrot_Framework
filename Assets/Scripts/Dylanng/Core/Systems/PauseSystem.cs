@@ -1,11 +1,13 @@
 ﻿using UnityEngine;
 using Dylanng.Core.Base;
+using Dylanng.Events.SystemEvents;
 
 namespace Dylanng.Core.Systems
 {
     public class PauseSystem : SystemBase
     {
         public bool IsPaused { get; private set; }
+        private GamePausedEvent _gamePausedEvent;
 
         public override void Initialize()
         {
@@ -25,6 +27,7 @@ namespace Dylanng.Core.Systems
             IsPaused = pause;
             Time.timeScale = IsPaused ? 0f : 1f;
 
+            
             //EventBus<GamePausedEvent>.Publish(new GamePausedEvent { IsPaused = IsPaused });
         }
     }

@@ -15,7 +15,11 @@ namespace Dylanng.Core
                 list = new List<Delegate>();
                 subs[t] = list;
             }
-            list.Add(handler);
+            
+            if (!list.Contains(handler))
+            {
+                list.Add(handler);
+            }
         }
 
         public static void Unsubscribe<T>(Action<T> handler) where T : IEvent
@@ -24,21 +28,17 @@ namespace Dylanng.Core
             if (subs.TryGetValue(t, out List<Delegate> list))
             {
                 list.Remove(handler);
-                if (list.Count == 0)
-                    subs.Remove(t);
             }
         }
-
 
         public static void Publish<T>(T eventData) where T : IEvent
         {
             Type t = typeof(T);
             if (subs.TryGetValue(t, out List<Delegate> list))
             {
-                Delegate[] delegates = list.ToArray();
-                foreach (Delegate d in delegates)
+                for (int i = list.Count - 1; i >= 0; i--)
                 {
-                    ((Action<T>)d)(eventData);
+                    ((Action<T>)list[i]).Invoke(eventData);
                 }
             }
         }

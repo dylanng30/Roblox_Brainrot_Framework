@@ -55,9 +55,6 @@ namespace Dylanng.Services
 
         private void PollMobileGestures()
         {
-            // RotationInput ở Mobile được xử lý và truyền vào từ RotateInput.cs (UI) nên không cần đọc ở đây.
-
-            // Xử lý Pinch-to-zoom (Vuốt 2 ngón) cho Mobile
             ZoomInput = 0f;
             if (Input.touchCount >= 2)
             {

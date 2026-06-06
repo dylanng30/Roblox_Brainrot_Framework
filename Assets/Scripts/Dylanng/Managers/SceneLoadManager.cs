@@ -21,7 +21,7 @@ namespace Dylanng.Managers
 
         private IEnumerator LoadSceneRoutine(string sceneName)
         {
-            // TODO: Bạn có thể gọi UIManager mở Loading Screen tại đây
+            // TODO: show Loading Canvas
 
             AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
             asyncLoad.allowSceneActivation = false;
@@ -30,8 +30,7 @@ namespace Dylanng.Managers
             {
                 yield return null;
             }
-
-            // Hoàn thành load, kích hoạt Scene
+            
             asyncLoad.allowSceneActivation = true;
 
             while (!asyncLoad.isDone)
@@ -39,8 +38,7 @@ namespace Dylanng.Managers
                 yield return null;
             }
 
-            // Bắn sự kiện Scene đã load xong cho các hệ thống khác biết
-            //EventBus<SceneLoadedEvent>.Publish(new SceneLoadedEvent { SceneName = sceneName });
+
         }
     }
 }

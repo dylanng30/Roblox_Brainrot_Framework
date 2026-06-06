@@ -10,12 +10,16 @@ namespace Dylanng.Core.Systems.TickSystem
         private readonly List<IFixedUpdatable> _fixedUpdatables = new List<IFixedUpdatable>();
         private readonly List<ILateUpdatable> _lateUpdatables = new List<ILateUpdatable>();
         
+        private readonly List<IOneSecondTickable> _oneSecTickables = new List<IOneSecondTickable>();
+        private float _oneSecondTimer;
+        
         private readonly HashSet<object> _toAdd = new HashSet<object>();
         private readonly HashSet<object> _toRemove = new HashSet<object>();
 
         public override void Initialize()
         {
             ServiceLocator.Register<ITickSystem>(this);
+            _oneSecondTimer = 0;
         }
 
         public void Register(object tickable)
@@ -45,6 +49,24 @@ namespace Dylanng.Core.Systems.TickSystem
                 catch (Exception e)
                 {
                     GameLogger.LogError($"Error in Update of {_updatables[i].GetType().Name}: {e.Message}");
+                }
+            }
+            
+            _oneSecondTimer += deltaTime;
+            while (_oneSecondTimer >= 1f)
+            {
+                _oneSecondTimer -= 1f; // Giữ lại phần dư
+
+                for (int i = _oneSecTickables.Count - 1; i >= 0; i--)
+                {
+                    try
+                    {
+                        _oneSecTickables[i].OnOneSecondTick();
+                    }
+                    catch (Exception e)
+                    {
+                        GameLogger.LogError($"Error in OneSecondTick of {_oneSecTickables[i].GetType().Name}: {e.Message}");
+                    }
                 }
             }
         }

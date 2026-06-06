@@ -1,10 +1,24 @@
-﻿namespace Dylanng.Core.Data
+using System;
+
+namespace Dylanng.Core.Data
 {
-    [System.Serializable]
+    [Serializable]
     public class SaveData
     {
-        public int Level = 1;
-        public int Coins = 0;
         public float MasterVolume = 1.0f;
+        public int Coins = 0;
+        public int Gems = 0;
+    }
+    
+    [Serializable]
+    public class AudioSaveData
+    {
+        // Music
+        public bool IsMusicOn = true;
+        public float MasterVolume = 1.0f;
+        
+        // Sound
+        public bool IsSoundOn = true;
+        public float MusicVolume = 1.0f;
     }
 }

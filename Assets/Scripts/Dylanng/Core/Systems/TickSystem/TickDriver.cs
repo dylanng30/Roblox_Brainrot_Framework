@@ -31,5 +31,7 @@ namespace Dylanng.Core.Systems.TickSystem
             if (_tickSystem == null || (_pauseSystem != null && _pauseSystem.IsPaused)) return;
             _tickSystem.LateUpdateTicks(Time.deltaTime);
         }
+        
+        
     }
 }
