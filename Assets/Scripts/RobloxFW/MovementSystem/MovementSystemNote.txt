@@ -1,0 +1,2 @@
+﻿Số luợng ít => Lazy Loading (new state)
+Số lượng nhiều => Fly weight (Logic tập trung thay vì new state cho từng statemachine)

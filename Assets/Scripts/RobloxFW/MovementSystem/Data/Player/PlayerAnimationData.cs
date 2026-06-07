@@ -1,0 +1,90 @@
+﻿using System;
+using UnityEngine;
+
+namespace RobloxFW.MovementSystem.Data.Player
+{
+    [Serializable]
+    public class PlayerAnimationData
+    {
+        [Header("---State Group Parameter Names---")]
+        [SerializeField] private string groundedParameterName =  "Grounded";
+        [SerializeField] private string movingParameterName = "Moving";
+        [SerializeField] private string stoppingParameterName = "Stopping";
+        [SerializeField] private string landingParameterName = "Landing";
+        [SerializeField] private string airborneParameterName = "Airborne";
+        [SerializeField] private string attackingParameterName = "Attacking";
+
+        [Header("---Grounded Parameter Names---")]
+        [SerializeField] private string idleParameterName = "isIdling";
+        [SerializeField] private string dashParameterName = "isDashing";
+        [SerializeField] private string walkParameterName = "isWalking";
+        [SerializeField] private string runParameterName = "isRunning";
+        [SerializeField] private string sprintParameterName = "isSprinting";
+        
+        [SerializeField] private string mediumStopParameterName = "isMediumStopping";
+        [SerializeField] private string hardStopParameterName = "isHardStopping";
+        
+        [SerializeField] private string rollParameterName = "isRolling";
+        [SerializeField] private string hardLandParameterName = "isHardLanding";
+        
+        [SerializeField] private string meleeAttackChopParameterName = "isChopping";
+        [SerializeField] private string meleeAttackStabParameterName = "isStabbing";
+        
+        [Header("---Airborne Parameter Names---")]
+        [SerializeField] private string fallParameterName = "isFalling";
+        [SerializeField] private string jumpParameterName = "isJumping";
+        
+        public int GroundedParameterHash { get; private set; }
+        public int MovingParameterHash { get; private set; }
+        public int StoppingParameterHash { get; private set; }
+        public int LandingParameterHash { get; private set; }
+        public int AirborneParameterHash { get; private set; }
+        public int AttackingParameterHash { get; private set; }
+        
+        public int IdleParameterHash { get; private set; }
+        public int DashParameterHash { get; private set; }
+        public int WalkParameterHash { get; private set; }
+        public int RunParameterHash { get; private set; }
+        public int SprintParameterHash { get; private set; }
+        
+        public int MediumStopParameterHash { get; private set; }
+        public int HardStopParameterHash { get; private set; }
+        public int RollParameterHash { get; private set; }
+        public int HardLandParameterHash { get; private set; }
+        
+        public int JumpParameterHash { get; private set; }
+        public int FallParameterHash { get; private set; }
+
+        //MELEE
+        public int MeleeAttackChopParameterHash { get; private set; }
+        public int MeleeAttackStabParameterHash { get; private set; }
+        
+        
+        public void Initialize()
+        {
+            GroundedParameterHash = Animator.StringToHash(groundedParameterName);
+            MovingParameterHash = Animator.StringToHash(movingParameterName);
+            StoppingParameterHash = Animator.StringToHash(stoppingParameterName);
+            LandingParameterHash = Animator.StringToHash(landingParameterName);
+            AirborneParameterHash = Animator.StringToHash(airborneParameterName);
+            AttackingParameterHash = Animator.StringToHash(attackingParameterName);
+            
+            IdleParameterHash = Animator.StringToHash(idleParameterName);
+            DashParameterHash = Animator.StringToHash(dashParameterName);
+            WalkParameterHash = Animator.StringToHash(walkParameterName);
+            RunParameterHash = Animator.StringToHash(runParameterName);
+            SprintParameterHash = Animator.StringToHash(sprintParameterName);
+            
+            MediumStopParameterHash = Animator.StringToHash(mediumStopParameterName);
+            HardStopParameterHash = Animator.StringToHash(hardStopParameterName);
+            
+            RollParameterHash = Animator.StringToHash(rollParameterName);
+            HardLandParameterHash = Animator.StringToHash(hardLandParameterName);
+            FallParameterHash = Animator.StringToHash(fallParameterName);
+            JumpParameterHash = Animator.StringToHash(jumpParameterName);
+
+            MeleeAttackChopParameterHash = Animator.StringToHash(meleeAttackChopParameterName);
+            MeleeAttackStabParameterHash = Animator.StringToHash(meleeAttackStabParameterName);
+        }
+    }
+}

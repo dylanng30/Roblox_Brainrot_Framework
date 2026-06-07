@@ -4,7 +4,7 @@ namespace Dylanng.Core.State
 {
     public class StateMachine
     {
-        private StateBase _currentState;
+        protected StateBase _currentState;
 
         public void Initialize(StateBase startingState)
         {

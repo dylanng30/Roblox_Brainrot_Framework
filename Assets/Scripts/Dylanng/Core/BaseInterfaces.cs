@@ -25,11 +25,6 @@ namespace Dylanng.Core
         void Die();
     }
 
-    public interface IInteractable
-    {
-        void Interact(GameObject interactor);
-    }
-
     public interface IEquippable
     {
         void Equip();
