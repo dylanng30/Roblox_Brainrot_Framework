@@ -1,4 +1,5 @@
-﻿using Dylanng.Core.Base;
+﻿using DG.Tweening;
+using Dylanng.Core.Base;
 using Dylanng.Core.Managers;
 using UnityEngine;
 using UnityEngine.UI;
@@ -30,27 +31,68 @@ namespace Dylanng.Core.UI
     public abstract class UIScreen : UIBase { }
     public abstract class UIPopup : UIBase 
     {
-        [Header("Popup Settings")]
-        [SerializeField] protected bool _closeOnBackdropClick = true;
-        [SerializeField] protected Button _closeButton;
+        [Header("Popup settings")]
+        [SerializeField] protected bool isExecutingPopupAnimation = true;
+        [SerializeField] protected float popupDuration = 0.5f;
+        [SerializeField] protected Ease popupEase = Ease.OutBack;
+
+        [Space(5)]
+        [SerializeField] protected bool isExecutingPopdownAnimation = true;
+        [SerializeField] protected float popdownDuration = 0.5f;
+        [SerializeField] protected Ease popdownEase = Ease.InBack;
+
+
+        [Header("Popup References")]
+        [SerializeField] protected Button closeButton;
+        [SerializeField] protected RectTransform mainPanel;
 
         public override void Initialize()
         {
             base.Initialize();
             
-            if (_closeButton)
-            {
-                _closeButton.onClick.AddListener(Close);
-            }
+            if (closeButton) closeButton.onClick.AddListener(Close);
         }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
             
-            if (_closeButton)
+            if (closeButton) closeButton.onClick.RemoveAllListeners();
+        }
+
+        public override void Show()
+        {
+            base.Show();
+
+            // Do popup animation
+            if (isExecutingPopupAnimation)
             {
-                _closeButton.onClick.RemoveAllListeners();
+                mainPanel.localScale = Vector3.one / 2f;
+                mainPanel.DOScale(Vector3.one, 0.5f).SetEase(popupEase);
+            }
+            else
+            {
+                mainPanel.localScale = Vector3.one;
+            }
+        }
+
+        public override void Hide()
+        {
+            // Do popdown animation
+            mainPanel.localScale = Vector3.one;
+
+            if (isExecutingPopdownAnimation)
+            {
+                mainPanel.DOScale(Vector3.zero, 0.5f)
+                    .SetEase(popdownEase)
+                    .OnComplete(() =>
+                    {
+                        base.Hide();
+                    });
+            }
+            else
+            {
+                base.Hide();
             }
         }
 
