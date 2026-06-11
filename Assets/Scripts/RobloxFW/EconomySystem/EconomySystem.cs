@@ -1,4 +1,3 @@
-using System;
 using Dylanng.Core;
 using Dylanng.Core.Base;
 using Dylanng.Core.Systems.TickSystem;
@@ -8,7 +7,15 @@ namespace RobloxFW.EconomySystem
 {
     public class EconomySystem : SystemBase, IOneSecondTickable
     {
-        private SaveLoadManager SaveManager => ServiceLocator.Get<SaveLoadManager>();
+        private SaveLoadManager _saveManager;
+        private SaveLoadManager SaveManager
+        {
+            get
+            {
+                if(_saveManager == null) _saveManager = ServiceLocator.Get<SaveLoadManager>();
+                return _saveManager;
+            }
+        }
         
         private bool _isChanged = false;
 

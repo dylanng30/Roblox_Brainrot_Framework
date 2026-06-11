@@ -7,6 +7,7 @@ namespace Dylanng.Core.Pooling
 {
     public class PoolManager : ManagerBase, IUpdatable
     {
+        [SerializeField] private PoolData[] poolDataArray;
         [SerializeField] private int maxInstantiatesPerFrame = 2;
         
         private Dictionary<string, Queue<PoolableObject>> _poolDictionary;
@@ -55,7 +56,7 @@ namespace Dylanng.Core.Pooling
         private PoolableObject CreateNewObject(string poolKey, PoolableObject prefab)
         {
             var obj = Instantiate(prefab, _poolRoot);
-            obj.gameObject.SetActive(false);
+            obj.SetActive(false);
             _poolDictionary[poolKey].Enqueue(obj);
             return obj;
         }
@@ -69,9 +70,9 @@ namespace Dylanng.Core.Pooling
                 CreateNewObject(poolKey, _prefabs[poolKey]);
             }
 
-            var obj = _poolDictionary[poolKey].Dequeue();
-            obj.transform.position = position;
-            obj.transform.rotation = rotation;
+            PoolableObject obj = _poolDictionary[poolKey].Dequeue();
+            obj.SetWorldPosition(position);
+            obj.SetWorldRotation(rotation);
             obj.OnSpawn();
             return obj as T;
         }
@@ -79,7 +80,7 @@ namespace Dylanng.Core.Pooling
         public void Despawn(string poolKey, PoolableObject obj)
         {
             obj.OnDespawn();
-            obj.transform.SetParent(_poolRoot);
+            obj.SetParent(_poolRoot, true);
             _poolDictionary[poolKey].Enqueue(obj);
         }
         

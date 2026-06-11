@@ -5,7 +5,7 @@ namespace Dylanng.Core.Pooling
 {
     public abstract class PoolableObject : MonoBehaviourBase, IPoolable
     {
-        public virtual void OnSpawn() => gameObject.SetActive(true);
-        public virtual void OnDespawn() => gameObject.SetActive(false);
+        public virtual void OnSpawn() => SetActive(true);
+        public virtual void OnDespawn() => SetActive(false);
     }
 }
