@@ -262,7 +262,7 @@ public class ColorPresetData : ScriptableObject
     [InlineProperty]
     public class GradientPreset
     {
-        [LabelText("Mode")]
+        [LabelText("modeEnum")]
         public GradientTextMode mode = GradientTextMode.VerticalGradient;
 
         [LabelText("Gradient")]

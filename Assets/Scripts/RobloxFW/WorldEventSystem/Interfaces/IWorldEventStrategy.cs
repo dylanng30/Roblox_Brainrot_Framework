@@ -2,17 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IWorldEventStrategy : MonoBehaviour
-{
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+using RobloxFW.WorldEventSystem.Data;
+using RobloxFW.WorldEventSystem.Data.Runtime;
 
-    // Update is called once per frame
-    void Update()
+namespace RobloxFW.WorldEventSystem.Interfaces
+{
+    public interface IWorldEventStrategy
     {
+        WorldEventEnum EventId { get; }
+        bool IsActive { get; set; }
         
+        void Initialize(WorldEventContext context);
+        void OnEventStart();
+        void OnEventTick(float deltaTime);
+        void OnEventEnd();
     }
 }

@@ -9,12 +9,10 @@ public class DissolveController : MonoBehaviour
 
     private Renderer targetRenderer;
     private MaterialPropertyBlock propBlock;
-
-    // Trạng thái vòng lặp
+    
     private int currentIndex = 0;
     private bool isMorphing = false;
-
-    // Cache ID của các properties trong Shader Graph để tối ưu Garbage Collection
+    
     private static readonly int TextureA_ID = Shader.PropertyToID("_TextureA");
     private static readonly int TextureB_ID = Shader.PropertyToID("_TextureB");
     private static readonly int Cutoff_ID = Shader.PropertyToID("_CutoffHeight");
@@ -26,26 +24,26 @@ public class DissolveController : MonoBehaviour
 
         if (textureList.Length > 0)
         {
-            // Set trạng thái ban đầu: Cutoff 1.5f sẽ hiển thị hoàn toàn TextureA
             SetMaterialProperties(textureList[0], textureList[0], 1.5f);
         }
     }
 
-    void Update()
+    public void TriggerMorph(Texture2D newTexture)
     {
-        if (Input.GetKeyDown(KeyCode.Space) && !isMorphing && textureList.Length > 1)
+        if (textureList.Length > 0 && newTexture != null)
         {
-            StartCoroutine(MorphToNextTexture());
+            StopAllCoroutines();
+            StartCoroutine(MorphToNextTexture(newTexture));
         }
     }
 
-    private IEnumerator MorphToNextTexture()
+    private IEnumerator MorphToNextTexture(Texture2D nextTexture)
     {
         isMorphing = true;
 
-        int nextIndex = (currentIndex + 1) % textureList.Length;
-
-        SetMaterialProperties(textureList[currentIndex], textureList[nextIndex], 1.5f);
+        Texture2D currentTexture = textureList[currentIndex];
+        
+        SetMaterialProperties(currentTexture, nextTexture, 1.5f);
 
         float elapsedTime = 0f;
         while (elapsedTime < morphDuration)
@@ -61,9 +59,10 @@ public class DissolveController : MonoBehaviour
             yield return null;
         }
 
-        SetMaterialProperties(textureList[currentIndex], textureList[nextIndex], -1f);
+        SetMaterialProperties(currentTexture, nextTexture, -1f);
+        
+        textureList[currentIndex] = nextTexture; 
 
-        currentIndex = nextIndex;
         isMorphing = false;
     }
 
