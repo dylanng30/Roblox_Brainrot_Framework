@@ -30,13 +30,13 @@ namespace RobloxFW.MovementSystem.Player.States.Airborne
             if (IsGrounded())
             {
                 Debug.Log("Grounded");
-                _stateMachine.TransitionTo(_stateMachine.LandingState);
+                _stateMachine.TransitionTo(_stateMachine.IdlingState);
             }
-            else if (CanClimb())
+            /*else if (CanClimb())
             {
                 Debug.Log("Climbing");
                 _stateMachine.TransitionTo(_stateMachine.ClimbIdlingState);
-            }
+            }*/
         }
 
     }

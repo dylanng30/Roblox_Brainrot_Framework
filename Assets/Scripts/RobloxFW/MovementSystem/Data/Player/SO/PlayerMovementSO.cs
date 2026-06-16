@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace RobloxFW.MovementSystem.Data.Player.SO
 {
-    [CreateAssetMenu(fileName = "PlayerMovement", menuName = "SO/PlayerMovement")]
+    [CreateAssetMenu(fileName = "PlayerMovement", menuName = "RobloxFW/PlayerMovementSO")]
     public class PlayerMovementSO : ScriptableObject
     {
         [field: SerializeField] public PlayerGroundedData GroundedData { get; private set; }

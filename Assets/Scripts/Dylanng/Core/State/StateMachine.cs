@@ -50,6 +50,5 @@ namespace Dylanng.Core.State
         {
             _currentState?.OnAnimationTransitionEvent();
         }
-        
     }
 }

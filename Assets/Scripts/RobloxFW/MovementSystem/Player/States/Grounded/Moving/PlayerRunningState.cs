@@ -55,7 +55,7 @@ namespace RobloxFW.MovementSystem.Player.States.Grounded.Moving
         {
             if (movementInput == Vector2.zero)
             {
-                _stateMachine.TransitionTo(_stateMachine.MediumStoppingState);
+                _stateMachine.TransitionTo(_stateMachine.IdlingState);
             }
         }
         protected override void HandleChangeStateInput()

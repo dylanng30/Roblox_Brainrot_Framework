@@ -29,44 +29,54 @@ namespace RobloxFW.MovementSystem.Player.States
             InitializeData();
         }
         
-        public virtual void Enter()
+        public override void Enter()
         {
-            //Debug.Log($"[PlayerMovementState] {GetType().Name}");
+            Debug.Log($"[PlayerMovementState] {GetType().Name}");
         }
 
-        public virtual void Exit()
+        public override void Exit()
         {
 
         }
 
-        public virtual void HandleInput()
+        public override void HandleInput()
         {
             ReadMovementInput();
         }
 
-        public virtual void Update()
+        public override void Update()
         {
             ToggleWalk();
         }
 
-        public virtual void PhysicsUpdate()
+        public override void PhysicsUpdate()
         {
 
         }
 
-        public virtual void OnAnimationEnterEvent()
+        public override void OnAnimationEnterEvent()
         {
             
         }
 
-        public virtual void OnAnimationExitEvent()
+        public override void OnAnimationExitEvent()
         {
             
         }
 
-        public virtual void OnAnimationTransitionEvent()
+        public override void OnAnimationTransitionEvent()
         {
             
+        }
+        
+        protected override void StartAnimation(int animationHash)
+        {
+            _stateMachine.PlayerMovement.Animator.SetBool(animationHash, true);
+        }
+
+        protected override void StopAnimation(int animationHash)
+        {
+            _stateMachine.PlayerMovement.Animator.SetBool(animationHash, false);
         }
 
         #region ---Main Methods---
@@ -79,6 +89,7 @@ namespace RobloxFW.MovementSystem.Player.States
         private void ReadMovementInput()
         {
             movementInput = _stateMachine.PlayerMovement.PlayerInput.Movement;
+            //Debug.Log(movementInput);
         }
 
         protected virtual void Move()
@@ -104,11 +115,11 @@ namespace RobloxFW.MovementSystem.Player.States
 
             var groundCheckDistance = _airborneData.GroundCheckDistance;
             
-            return groundDetector.IsLeftFootOnGround(groundCheckDistance) &&
+            return groundDetector.IsLeftFootOnGround(groundCheckDistance) ||
                    groundDetector.IsRightFootOnGround(groundCheckDistance);
         }
 
-        protected virtual bool CanClimb()
+        /*protected virtual bool CanClimb()
         {
             //Debug.Log($"Checking Climbing");
             var wallDetector = _stateMachine.PlayerMovement.ColliderDetectors.WallDetector;
@@ -123,22 +134,14 @@ namespace RobloxFW.MovementSystem.Player.States
             
             return wallDetector.IsLeftHandOnWall(wallCheckDistance) &&
                    wallDetector.IsRightHandOnWall(wallCheckDistance);
-        }
+        }*/
 
         
         #endregion
         
         #region --- Helper Methods---
 
-        protected virtual void StartAnimation(int animationHash)
-        {
-            _stateMachine.PlayerMovement.Animator.SetBool(animationHash, true);
-        }
-
-        protected virtual void StopAnimation(int animationHash)
-        {
-            _stateMachine.PlayerMovement.Animator.SetBool(animationHash, false);
-        }
+        
         protected virtual Vector3 GetPlayerHorizontalVelocity()
         {
             Vector3 playerHorizontalVelocity = _stateMachine.PlayerMovement.RigidBody.velocity;
