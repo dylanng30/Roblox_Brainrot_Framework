@@ -5,21 +5,22 @@ namespace RobloxFW.MovementSystem.Player.Components
 {
     public class PlayerColliderDetectors : MonoBehaviour
     {
-        //Hands
-        [SerializeField] private LayerMask _groundLayer;
-        
-        [SerializeField] private Transform _leftHand;
-        [SerializeField] private Transform _rightHand;
         //Foots
-        [SerializeField] private Transform _leftFoot;
-        [SerializeField] private Transform _rightFoot;
+        [SerializeField] private LayerMask groundLayer;
+        [SerializeField] private Transform leftFoot;
+        [SerializeField] private Transform rightFoot;
         
-        public WallDetector WallDetector { get; private set; }
+        //Hands
+        /*[SerializeField] private Transform _leftHand;
+        [SerializeField] private Transform _rightHand;*/
+        
+        
+        //public WallDetector WallDetector { get; private set; }
         public GroundDetector GroundDetector { get; private set; }
 
         public void Initialize()
         {
-            InitizalizeWallDetector();
+            //InitizalizeWallDetector();
             InitizalizeGroundDetector();
         }
 
@@ -27,25 +28,25 @@ namespace RobloxFW.MovementSystem.Player.Components
         {
             GroundDetector = new GroundDetector();
             
-            if (_leftFoot == null || _rightFoot == null)
+            if (leftFoot == null || rightFoot == null)
             {
-                Debug.LogError($"Left foot: {_leftFoot} / Right foot: {_rightFoot}");
+                Debug.LogError($"Left foot: {leftFoot} / Right foot: {rightFoot}");
                 return;
             }
             
-            GroundDetector.RegisterCheckPoint(_leftFoot, _rightFoot, _groundLayer);
+            GroundDetector.RegisterCheckPoint(leftFoot, rightFoot, groundLayer);
         }
-        private void InitizalizeWallDetector()
+        /*private void InitizalizeWallDetector()
         {
             WallDetector = new WallDetector();
             
             if (_leftHand == null || _rightHand == null)
             {
-                Debug.LogError($"Left foot: {_leftFoot} / Right foot: {_rightHand}");
+                Debug.LogError($"Left foot: {leftFoot} / Right foot: {_rightHand}");
                 return;
             }
             
-            WallDetector.RegisterCheckPoint(_leftHand, _rightHand, _groundLayer);
-        }
+            WallDetector.RegisterCheckPoint(_leftHand, _rightHand, groundLayer);
+        }*/
     }
 }

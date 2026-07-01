@@ -4,7 +4,7 @@
     {
         public virtual void Enter()
         {
-            //Debug.Log($"{GetType().Name} Enter");
+            GameLogger.Log($"{GetType().Name} Enter");
         }
         public virtual void HandleInput() {}
         public virtual void Update() {}
@@ -15,7 +15,7 @@
 
         public virtual void OnAnimationExitEvent()
         {
-            //Debug.Log($"{GetType().Name} Animation Exit");
+            GameLogger.Log($"{GetType().Name} Animation Exit");
         }
         public virtual void OnAnimationTransitionEvent() {}
         

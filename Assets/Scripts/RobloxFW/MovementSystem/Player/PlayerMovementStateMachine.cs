@@ -90,7 +90,6 @@ namespace RobloxFW.MovementSystem.Player
             PlayerMovement = playerMovement;
             LoadDatas();
             
-            // Chỉ IdlingState được khởi tạo tại đây để bắt đầu FSM
             Initialize(IdlingState); 
         }
 

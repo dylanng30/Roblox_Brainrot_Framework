@@ -33,10 +33,10 @@ namespace RobloxFW.MovementSystem.Player.States.Airborne.Climbing
                 _stateMachine.TransitionTo(_stateMachine.LandingState);
             }
 
-            if (!CanClimb())
+            /*if (!CanClimb())
             {
                 _stateMachine.TransitionTo(_stateMachine.FallingState);
-            }
+            }*/
             
             ConsumeStamina();
         }
@@ -56,7 +56,7 @@ namespace RobloxFW.MovementSystem.Player.States.Airborne.Climbing
 
         #region ---MAIN METHODS---
 
-        protected override void Rotate()
+        /*protected override void Rotate()
         {
             var player = _stateMachine.PlayerMovement;
             
@@ -72,7 +72,7 @@ namespace RobloxFW.MovementSystem.Player.States.Airborne.Climbing
                 targetRotation,
                 _movementData.BaseSpeed *  Time.deltaTime
             );
-        }
+        }*/
 
         protected virtual void ConsumeStamina()
         {

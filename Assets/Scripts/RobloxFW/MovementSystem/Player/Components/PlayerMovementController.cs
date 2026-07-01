@@ -1,4 +1,6 @@
-﻿using Dylanng.Core.Systems.TickSystem;
+using System;
+using Dylanng.Core;
+using Dylanng.Core.Systems.TickSystem;
 using RobloxFW.MovementSystem.Data.Player.SO;
 using RobloxFW.MovementSystem.Data.Player;
 using RobloxFW.MovementSystem.Player;
@@ -9,21 +11,19 @@ namespace RobloxFW.MovementSystem.Player.Components
 {
     public class PlayerMovementController : MonoBehaviour, IUpdatable, IFixedUpdatable
     {
-        [field: SerializeField] public PlayerMovementSO Data { get; private set; }
-        [field: SerializeField] public PlayerAnimationData  AnimationData { get; private set; }
-        [field: SerializeField] public PlayerCameraController CameraController { get; private set; }
-        [field: SerializeField] public AnimationController AnimationController { get; private set; }
-        
-        public Animator Animator { get; private set; }
-        public Rigidbody RigidBody { get; private set; }
-        public PlayerInput PlayerInput {get; private set;}
-        public PlayerColliderDetectors ColliderDetectors { get; private set; }
+        public PlayerMovementSO Data;
+        public PlayerAnimationData AnimationData;
+        public PlayerCameraController CameraController;
+        public AnimationController AnimationController;
+        public PlayerColliderDetectors ColliderDetectors;
+        public Animator Animator;
+        public Rigidbody RigidBody;
+        public PlayerInput PlayerInput;
         
         private PlayerMovementStateMachine _movementStateMachine;
         
         void Awake()
         {
-            LoadComponents();
             _movementStateMachine = new PlayerMovementStateMachine(this);
 
             AnimationController.OnAnimEnter += OnMovementStateAnimationEnterEvent;
@@ -35,7 +35,27 @@ namespace RobloxFW.MovementSystem.Player.Components
         {
             Initialize();
         }
-        
+
+        private void OnEnable()
+        {
+            //ServiceLocator.Get<ITickSystem>()?.Register(this);
+        }
+
+        private void OnDisable()
+        {
+            //ServiceLocator.Get<ITickSystem>()?.Unregister(this);
+        }
+
+        private void Update()
+        {
+            OnUpdate(Time.deltaTime);
+        }
+
+        private void FixedUpdate()
+        {
+            OnFixedUpdate(Time.fixedDeltaTime);
+        }
+
         public void OnUpdate(float deltaTime)
         {
             _movementStateMachine.HandleInput();
@@ -78,56 +98,6 @@ namespace RobloxFW.MovementSystem.Player.Components
         private void InitializeColliderDetectors()
         {
             ColliderDetectors.Initialize();
-        }
-
-        #endregion
-
-        #region ---LOAD---
-
-        private void LoadComponents()
-        {
-            LoadPlayerInput();
-            LoadRigidBody();
-            LoadAnimator();
-            LoadColliderDetectors();
-        }
-        private void LoadPlayerInput()
-        {
-            if (PlayerInput != null)
-            {
-                return;
-            }
-
-            PlayerInput = GetComponent<PlayerInput>();
-        }
-
-        private void LoadRigidBody()
-        {
-            if(RigidBody != null)
-            {
-                return;
-            }
-            
-            RigidBody = GetComponent<Rigidbody>();
-        }
-        private void LoadAnimator()
-        {
-            if (Animator != null)
-            {
-                return;
-            }
-            
-            Animator = GetComponent<Animator>();
-        }
-
-        private void LoadColliderDetectors()
-        {
-            if (ColliderDetectors != null)
-            {
-                return;
-            }
-            
-            ColliderDetectors = GetComponentInChildren<PlayerColliderDetectors>();
         }
 
         #endregion

@@ -24,10 +24,4 @@ namespace Dylanng.Core
         void Heal(float amount);
         void Die();
     }
-
-    public interface IEquippable
-    {
-        void Equip();
-        void Unequip();
-    }
 }
