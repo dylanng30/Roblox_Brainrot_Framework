@@ -109,7 +109,12 @@ namespace Dylanng.Core.Base
 
     public abstract class ManagerBase : MonoBehaviourBase, IManager
     {
-        public abstract void Initialize();
+        public bool IsInitialized { get; private set; } = false;
+
+        public virtual void Initialize()
+        {
+            IsInitialized = true;
+        }
     }
 
     public abstract class ServiceBase : IService

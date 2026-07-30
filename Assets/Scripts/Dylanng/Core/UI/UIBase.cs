@@ -28,6 +28,11 @@ namespace Dylanng.Core.UI
         protected virtual void OnHide() { }
     }
 
+    public abstract class UITop : UIBase
+    {
+        
+    }
+
     public abstract class UIScreen : UIBase { }
     public abstract class UIPopup : UIBase 
     {

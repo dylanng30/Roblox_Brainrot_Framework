@@ -1,135 +1,165 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using Dylanng.Core.Base;
+using Dylanng.Core.Data;
 using Dylanng.Core.UI;
 
 namespace Dylanng.Core.Managers
 {
-    public class UIManager : ManagerBase
+    public abstract class UIManager : ManagerBase
     {
-        [Header("Layer Management")]
-        [SerializeField] private Transform _screenLayer;
-        [SerializeField] private Transform _popupLayer;
-        [SerializeField] private Transform _loadingLayer;
+        [Header("--- EDITOR SETTINGS ---")]
+        [SerializeField] protected bool enableLog;
         
-        [Header("Loading Indicator")]
-        [SerializeField] private GameObject _loadingIndicatorPrefab;
-        
-        private readonly Stack<UIScreen> _screenStack = new Stack<UIScreen>();
-        private readonly Stack<UIPopup> _popupStack = new Stack<UIPopup>();
-        
-        private readonly Queue<Func<Task>> _popupQueue = new Queue<Func<Task>>();
-        private readonly Dictionary<Type, UIBase> _registeredUIs = new Dictionary<Type, UIBase>();
+        [Space (10)]
+        [Header("--- LAYER MANAGER ----")]
+        [SerializeField] protected Transform topLayer;
+        [SerializeField] protected Transform screenLayer;
+        [SerializeField] protected Transform popupLayer;
+        [SerializeField] protected Transform toastLayer;
 
-        public const string ScreensPath = "UI/Screens/";
-        public const string PopupsPath = "UI/Popups/";
+        [Header("--- TOAST SETTINGS ---")]
+        [SerializeField] private GameObject toastPrefab;
 
-        private bool _isTransitioning;
-        private GameObject _activeLoadingIndicator;
+        [Header("--- UI DATABASE ---")]
+        [SerializeField] private UiDatabaseSO uiDB;
+
+        [Header("--- DELAY SETTINGS ---")]
+        [SerializeField] private float openPopupDelay = 2f;
+        
+        protected Stack<UITop> _topStack;
+        protected Stack<UITop> TopStack => _topStack ??= new Stack<UITop>();
+        
+        protected Stack<UIScreen> _screenStack;
+        protected Stack<UIScreen> ScreenStack => _screenStack ??= new Stack<UIScreen>();
+
+        protected Stack<UIPopup> _popupStack;
+        protected Stack<UIPopup> PopupStack => _popupStack ??= new Stack<UIPopup>();
+
+        protected Queue<Action> _popupQueue;
+        protected Queue<Action> PopupQueue => _popupQueue ??= new Queue<Action>();
+
+        protected Dictionary<Type, UIBase> _uiPrefabs;
+        protected Dictionary<Type, UIBase> UIPrefabs => _uiPrefabs ??= BuildPrefabDictionary();
+
+        protected Dictionary<Type, UIBase> _uiInstances;
+        protected Dictionary<Type, UIBase> UIInstances => _uiInstances ??= new Dictionary<Type, UIBase>();
+
+        protected WaitForSeconds _openPopupWait;
+        protected Coroutine _openPopupCoroutine;
 
         public override void Initialize()
         {
-            ServiceLocator.Register<UIManager>(this);
-        }
+            base.Initialize();
 
-        #region --- ASYNC LOADINNG ---
-        private async Task<T> LoadUIAsync<T>(string path, Transform parent) where T : UIBase
+            _openPopupWait = new WaitForSeconds(openPopupDelay);
+        }
+        
+        protected Dictionary<Type, UIBase> BuildPrefabDictionary()
+        {
+            var dict = new Dictionary<Type, UIBase>();
+            if (uiDB != null && uiDB.UIs != null)
+            {
+                foreach (UIBase ui in uiDB.UIs)
+                {
+                    dict[ui.GetType()] = ui;
+                }
+            }
+            return dict;
+        }
+        
+        protected T GetOrInstantiateUI<T>(Transform parent) where T : UIBase
         {
             var type = typeof(T);
-            
-            if (_registeredUIs.TryGetValue(type, out var view))
+            if (UIInstances.TryGetValue(type, out var instance))
             {
-                return view as T;
+                return instance as T;
             }
 
-            try
+            if (UIPrefabs.TryGetValue(type, out var prefab))
             {
-                ShowLoadingIndicator();
-                
-                ResourceRequest request = Resources.LoadAsync<T>(path);
-                
-                while (!request.isDone)
+                try
                 {
-                    await Task.Yield();
+                    T newInstance = Instantiate(prefab as T, parent);
+                    newInstance.Initialize();
+                    UIInstances.Add(type, newInstance);
+                    return newInstance;
                 }
-
-                T uiPrefab = request.asset as T;
-                if (uiPrefab == null)
+                catch (Exception ex)
                 {
-                    GameLogger.LogError($"[UIManager] Không tìm thấy Prefab tại đường dẫn: {path}");
+                    if (enableLog)
+                    {
+                        GameLogger.LogError($"[UIManager] Lỗi khi Instantiate {type.Name}: {ex.Message}");
+                    }                    
                     return null;
                 }
-                
-                T instance = Instantiate(uiPrefab, parent);
-                instance.Initialize();
-                _registeredUIs.Add(type, instance);
-                
-                return instance;
             }
-            catch (Exception ex)
+
+            if (enableLog)
             {
-                GameLogger.LogError($"[UIManager] Lỗi khi load Async {type.Name}: {ex.Message}");
-                return null;
-            }
-            finally
-            {
-                HideLoadingIndicator();
-            }
+                GameLogger.LogError($"[UIManager] Không tìm thấy Prefab của {type.Name} trong UiDatabaseSO!");
+            }            
+            return null;
         }
 
-        private void ShowLoadingIndicator()
-        {
-            if (_loadingIndicatorPrefab != null && _activeLoadingIndicator == null)
-            {
-                _activeLoadingIndicator = Instantiate(_loadingIndicatorPrefab, _loadingLayer);
-            }
-            else if (_activeLoadingIndicator != null)
-            {
-                _activeLoadingIndicator.SetActive(true);
-            }
-        }
+        #region --- TOP ---
 
-        private void HideLoadingIndicator()
+        public T OpenTop<T>(object data = null, bool isImmediate = false) where T : UITop
         {
-            if (_activeLoadingIndicator != null)
+            T top = GetOrInstantiateUI<T>(topLayer);
+            
+            if (top != null)
             {
-                _activeLoadingIndicator.SetActive(false);
+                if (TopStack.Count > 0)
+                {
+                    TopStack.Peek().Hide();
+                }
+
+                top.Setup(data);
+                top.Show();
+                TopStack.Push(top);
             }
+            
+            return top;
+        }
+        
+        public void CloseCurrentTop()
+        {
+            if (_topStack == null || _topStack.Count == 0) return;
+
+            var top = _topStack.Pop();
+            top.Hide();
         }
 
         #endregion
-        
-        #region --- Screen Management ---
-        public async Task<T> OpenScreenAsync<T>(object data = null) where T : UIScreen
-        {
-            if (_isTransitioning) return null;
-            _isTransitioning = true;
 
-            T screen = await LoadUIAsync<T>($"{ScreensPath}{typeof(T).Name}", _screenLayer);
+        #region --- SCREEN MANAGEMENT ---
+        
+        public T OpenScreen<T>(object data = null) where T : UIScreen
+        {
+            T screen = GetOrInstantiateUI<T>(screenLayer);
             
             if (screen != null)
             {
-                if (_screenStack.Count > 0)
+                if (ScreenStack.Count > 0)
                 {
-                    _screenStack.Peek().Hide();
+                    ScreenStack.Peek().Hide();
                 }
 
                 screen.Setup(data);
                 screen.Show();
-                _screenStack.Push(screen);
+                ScreenStack.Push(screen);
             }
-
-            _isTransitioning = false;
+            
             return screen;
         }
 
         public void CloseCurrentScreen()
         {
-            if (_isTransitioning) return;
-
-            if (_screenStack.Count > 1)
+            if (_screenStack != null && _screenStack.Count > 1)
             {
                 var screen = _screenStack.Pop();
                 screen.Hide();
@@ -137,60 +167,68 @@ namespace Dylanng.Core.Managers
                 _screenStack.Peek().Show();
             }
         }
-
         #endregion
-
+        
         #region --- QUEUE POPUP ---
-        public async Task<T> OpenPopupAsync<T>(object data = null, bool isImmediate = false) where T : UIPopup
+        
+        public T OpenPopup<T>(object data = null, bool isImmediate = false) where T : UIPopup
         {
-            if (!isImmediate && _popupStack.Count > 0)
+            bool isPopupActiveOrWaiting = (PopupStack.Count > 0) || (_openPopupCoroutine != null);
+
+            if (!isImmediate && isPopupActiveOrWaiting)
             {
-                Task EnqueuePopupAction() => LoadAndShowPopupAsync<T>(data);
-                
-                _popupQueue.Enqueue(EnqueuePopupAction);
+                PopupQueue.Enqueue(() => LoadAndShowPopup<T>(data));
                 return null; 
             }
             
-            return await LoadAndShowPopupAsync<T>(data);
+            return LoadAndShowPopup<T>(data);
         }
 
-        private async Task<T> LoadAndShowPopupAsync<T>(object data) where T : UIPopup
+        protected T LoadAndShowPopup<T>(object data) where T : UIPopup
         {
-            while (_isTransitioning) await Task.Yield();
-            _isTransitioning = true;
-
-            T popup = await LoadUIAsync<T>($"{PopupsPath}{typeof(T).Name}", _popupLayer);
+            T popup = GetOrInstantiateUI<T>(popupLayer);
             
             if (popup != null)
             {
                 popup.Setup(data);
                 popup.Show();
-                _popupStack.Push(popup);
+                PopupStack.Push(popup);
             }
 
-            _isTransitioning = false;
             return popup;
         }
         
-        public async void CloseCurrentPopup()
+        public void CloseCurrentPopup()
         {
-            if (_isTransitioning || _popupStack.Count == 0) return;
+            if (_popupStack == null || _popupStack.Count == 0) return;
 
             var popup = _popupStack.Pop();
             popup.Hide();
             
-            if (_popupStack.Count == 0 && _popupQueue.Count > 0)
+            if (_popupStack.Count == 0 && PopupQueue.Count > 0)
             {
-                var nextPopupTask = _popupQueue.Dequeue();
-                if (nextPopupTask != null)
+                if (_openPopupCoroutine == null)
                 {
-                    await nextPopupTask.Invoke();
+                    _openPopupCoroutine = StartCoroutine(DelayOpenPopupCoroutine());
                 }
+            }
+        }
+
+        private IEnumerator DelayOpenPopupCoroutine()
+        {
+            yield return _openPopupWait;
+            _openPopupCoroutine = null;
+            if (PopupQueue.Count > 0)
+            {
+                var nextPopupAction = _popupQueue.Dequeue();
+                nextPopupAction?.Invoke();
             }
         }
 
         public void CloseAllPopups()
         {
+            if (_popupStack == null) return;
+            
             while (_popupStack.Count > 0)
             {
                 var popup = _popupStack.Pop();
@@ -200,10 +238,54 @@ namespace Dylanng.Core.Managers
         
         public void ClearPopupQueue()
         {
-            _popupQueue.Clear();
+            _popupQueue?.Clear();
+            
+            if (_openPopupCoroutine != null)
+            {
+                StopCoroutine(_openPopupCoroutine);
+                _openPopupCoroutine = null;
+            }
         }
 
         #endregion
+        
+        #region --- TOAST MANAGEMENT ---
+
+        private Queue<UI.Elements.Toast.UIToastItem> _toastPool;
+        private Queue<UI.Elements.Toast.UIToastItem> ToastPool => _toastPool ??= new Queue<UI.Elements.Toast.UIToastItem>();
+
+        public void ShowToast(string message, float duration = 2f)
+        {
+            if (toastPrefab == null || toastLayer == null)
+            {
+                GameLogger.LogError("[UIManager] Missing toastPrefab or toastLayer!");
+                return;
+            }
+
+            UI.Elements.Toast.UIToastItem toast = null;
+            if (ToastPool.Count > 0)
+            {
+                toast = ToastPool.Dequeue();
+                toast.gameObject.SetActive(true);
+            }
+            else
+            {
+                var go = Instantiate(toastPrefab, toastLayer);
+                toast = go.GetComponent<UI.Elements.Toast.UIToastItem>();
+            }
+
+            if (toast != null)
+            {
+                toast.transform.SetAsLastSibling();
+                toast.ShowToast(message, duration, () => {
+                    toast.gameObject.SetActive(false);
+                    ToastPool.Enqueue(toast);
+                });
+            }
+        }
+
+        #endregion
+
         
     }
 }
