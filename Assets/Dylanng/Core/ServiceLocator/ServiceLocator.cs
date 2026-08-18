@@ -37,5 +37,10 @@ namespace Dylanng
             GameLogger.LogError($"Service {type.Name} not found. Are you sure it's registered?");
             return default;
         }
+
+        public static void ClearAll()
+        {
+            _services.Clear();
+        }
     }
 }

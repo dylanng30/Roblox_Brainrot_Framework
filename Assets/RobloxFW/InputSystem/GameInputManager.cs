@@ -23,7 +23,6 @@ namespace RobloxFW.InputSystem
         public bool IsPressingRightControl { get; private set; }
         public bool Dash { get; private set; }
         public bool Sprint { get; private set; }
-        public int HotBarIndex { get; private set; }
 
         private int _cameraTouchId = -1;
         private int _movementTouchId = -1;
@@ -37,10 +36,9 @@ namespace RobloxFW.InputSystem
         public override void Initialize()
         {
             base.Initialize();
-
+            
+            ServiceLocator.Register(this);
             jumpButton.HoldAction += HandleJumpButtonAction;
-
-            ServiceLocator.Get<ITickSystem>()?.Register(this);
         }
 
         protected override void OnDestroy()
@@ -49,7 +47,15 @@ namespace RobloxFW.InputSystem
 
             jumpButton.HoldAction -= HandleJumpButtonAction;
             ServiceLocator.Get<ITickSystem>()?.Unregister(this);
-        }      
+            ServiceLocator.Unregister<GameInputManager>();
+        }
+
+        protected override void OnGameBooted(IGameBootedEvent evt)
+        {
+            base.OnGameBooted(evt);
+            Debug.Log("adssad");
+            ServiceLocator.Get<ITickSystem>()?.Register(this);
+        }
 
         public void OnUpdate(float deltaTime)
         {

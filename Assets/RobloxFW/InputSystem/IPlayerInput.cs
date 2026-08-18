@@ -11,7 +11,6 @@ namespace RobloxFW.InputSystem
         bool IsPressingRightControl { get; }
         bool Dash { get; }
         bool Sprint { get; }
-        int HotBarIndex { get; }
         
         bool PressLeftMouse();
         bool IsDraggingLeftMouse();

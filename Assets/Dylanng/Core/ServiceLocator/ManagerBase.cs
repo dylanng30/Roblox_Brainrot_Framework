@@ -9,7 +9,6 @@ namespace Dylanng
         public virtual void Initialize()
         {
             IsInitialized = true;
-            
             EventBus.Subscribe<IGameBootedEvent>(OnGameBooted);
         }
 

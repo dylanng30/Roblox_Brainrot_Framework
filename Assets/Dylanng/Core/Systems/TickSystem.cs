@@ -5,9 +5,9 @@ namespace Dylanng
 {
     public class TickSystem : SystemBase, ITickSystem
     {
-        private readonly List<IUpdatable> _updatables = new List<IUpdatable>();
-        private readonly List<IFixedUpdatable> _fixedUpdatables = new List<IFixedUpdatable>();
-        private readonly List<ILateUpdatable> _lateUpdatables = new List<ILateUpdatable>();
+        private readonly List<IUpdatable> updatables = new List<IUpdatable>();
+        private readonly List<IFixedUpdatable> fixedUpdatables = new List<IFixedUpdatable>();
+        private readonly List<ILateUpdatable> lateUpdatables = new List<ILateUpdatable>();
         
         private readonly HashSet<object> _toAdd = new HashSet<object>();
         private readonly HashSet<object> _toRemove = new HashSet<object>();
@@ -20,6 +20,16 @@ namespace Dylanng
         public override void Cleanup()
         {
             ServiceLocator.Unregister<ITickSystem>();
+        }
+
+        public void ClearAllTickables()
+        {
+            updatables.Clear();
+            fixedUpdatables.Clear();
+            lateUpdatables.Clear();
+            
+            _toAdd.Clear();
+            _toRemove.Clear();
         }
 
         public void Register(object tickable)
@@ -40,41 +50,41 @@ namespace Dylanng
         {
             ProcessPendingChanges();
             
-            for (int i = _updatables.Count - 1; i >= 0; i--)
+            for (int i = updatables.Count - 1; i >= 0; i--)
             {
                 try
                 {
-                    _updatables[i].OnUpdate(deltaTime);
+                    updatables[i].OnUpdate(deltaTime);
                 }
                 catch (Exception e)
                 {
-                    GameLogger.LogError($"Error in Update of {_updatables[i].GetType().Name}: {e.Message}");
+                    GameLogger.LogError($"Error in Update of {updatables[i].GetType().Name}: {e.Message}");
                 }
             }
         }
 
         public void FixedUpdateTicks(float fixedDeltaTime)
         {
-            for (int i = _fixedUpdatables.Count - 1; i >= 0; i--)
+            for (int i = fixedUpdatables.Count - 1; i >= 0; i--)
             {
                 try
                 {
-                    _fixedUpdatables[i].OnFixedUpdate(fixedDeltaTime);
+                    fixedUpdatables[i].OnFixedUpdate(fixedDeltaTime);
                 }
                 catch (Exception e)
                 {
-                    GameLogger.LogError($"Error in FixedUpdate: {e.Message}");
+                    GameLogger.LogError($"Error in FixedUpdate: {e.ToString()}");
                 }
             }
         }
 
         public void LateUpdateTicks(float deltaTime)
         {
-            for (int i = _lateUpdatables.Count - 1; i >= 0; i--)
+            for (int i = lateUpdatables.Count - 1; i >= 0; i--)
             {
                 try
                 {
-                    _lateUpdatables[i].OnLateUpdate(deltaTime);
+                    lateUpdatables[i].OnLateUpdate(deltaTime);
                 }
                 catch (Exception e)
                 {
@@ -89,9 +99,9 @@ namespace Dylanng
             {
                 foreach (var obj in _toRemove)
                 {
-                    if (obj is IUpdatable u) _updatables.Remove(u);
-                    if (obj is IFixedUpdatable fu) _fixedUpdatables.Remove(fu);
-                    if (obj is ILateUpdatable lu) _lateUpdatables.Remove(lu);
+                    if (obj is IUpdatable u) updatables.Remove(u);
+                    if (obj is IFixedUpdatable fu) fixedUpdatables.Remove(fu);
+                    if (obj is ILateUpdatable lu) lateUpdatables.Remove(lu);
                 }
 
                 _toRemove.Clear();
@@ -101,9 +111,9 @@ namespace Dylanng
             {
                 foreach (var obj in _toAdd)
                 {
-                    if (obj is IUpdatable u && !_updatables.Contains(u)) _updatables.Add(u);
-                    if (obj is IFixedUpdatable fu && !_fixedUpdatables.Contains(fu)) _fixedUpdatables.Add(fu);
-                    if (obj is ILateUpdatable lu && !_lateUpdatables.Contains(lu)) _lateUpdatables.Add(lu);
+                    if (obj is IUpdatable u && !updatables.Contains(u)) updatables.Add(u);
+                    if (obj is IFixedUpdatable fu && !fixedUpdatables.Contains(fu)) fixedUpdatables.Add(fu);
+                    if (obj is ILateUpdatable lu && !lateUpdatables.Contains(lu)) lateUpdatables.Add(lu);
                 }
 
                 _toAdd.Clear();
