@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Dylanng.Core.Pooling
+namespace Dylanng
 {
     public class PoolManager : ManagerBase, IUpdatable
     {
@@ -15,13 +15,15 @@ namespace Dylanng.Core.Pooling
 
         public override void Initialize()
         {
+            base.Initialize();
+            Debug.Log("Initializing Pool Manager");
             _poolDictionary = new Dictionary<string, Queue<PoolableObject>>();
             _prefabs = new Dictionary<string, PoolableObject>();
             _instantiationQueue = new Queue<(string, PoolableObject)>();
             
             _poolRoot = new GameObject("[Pool]").transform;
             //DontDestroyOnLoad(_poolRoot.gameObject);
-            ServiceLocator.Register<PoolManager>(this);
+            ServiceLocator.Register(this);
         }
 
         protected override void OnDestroy()
@@ -32,10 +34,8 @@ namespace Dylanng.Core.Pooling
 
         public void ClearAllPools()
         {
-            foreach (string key in _poolDictionary.Keys)
-            {
-                ClearPool(key);
-            }
+            _poolDictionary.Clear();
+
         }
 
         public bool HasPool(string poolKey)
@@ -45,6 +45,12 @@ namespace Dylanng.Core.Pooling
 
         public void AddCreatePoolAction(string poolKey, PoolableObject prefab, int amount)
         {
+            if (prefab == null)
+            {
+                Debug.LogError($"[PoolManager] Cannot create pool for key '{poolKey}' because the prefab is null!");
+                return;
+            }
+
             if (!_poolDictionary.ContainsKey(poolKey))
             {
                 _poolDictionary.Add(poolKey, new Queue<PoolableObject>());
@@ -72,19 +78,14 @@ namespace Dylanng.Core.Pooling
         private PoolableObject CreateNewObject(string poolKey, PoolableObject prefab)
         {
             var obj = Instantiate(prefab, _poolRoot);
-            obj.PoolKey = poolKey;
             obj.SetActive(false);
             _poolDictionary[poolKey].Enqueue(obj);
             return obj;
         }
-        
+
         public T Spawn<T>(string poolKey, Vector3 position, Quaternion rotation) where T : PoolableObject
         {
-            if (!_poolDictionary.ContainsKey(poolKey))
-            {
-                GameLogger.LogError($"Pool {poolKey} doesn't exist");
-                return null;
-            }
+            if (!_poolDictionary.ContainsKey(poolKey)) return null;
 
             if (_poolDictionary[poolKey].Count == 0)
             {
@@ -98,11 +99,11 @@ namespace Dylanng.Core.Pooling
             return obj as T;
         }
 
-        public void Despawn(PoolableObject obj)
+        public void Despawn(string poolKey, PoolableObject obj)
         {
             obj.OnDespawn();
             obj.SetParent(_poolRoot, true);
-            _poolDictionary[obj.PoolKey].Enqueue(obj);
+            _poolDictionary[poolKey].Enqueue(obj);
         }
         
         public void ClearPool(string poolKey)
